@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Application | Kassim Textile Pvt. Ltd.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --navy:#0f172a;--denim:#1e3a8a;--blue:#2563eb;--light:#eff6ff;
+    --slate:#64748b;--border:#e2e8f0;--bg:#f8fafc;--white:#fff;
+    --green:#059669;--red:#dc2626;--gold:#d97706;
+    --radius:12px;--shadow:0 4px 24px rgba(15,23,42,.08);
+  }
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:#1e293b;min-height:100vh}
+
+  /* ── HEADER ── */
+  header{background:linear-gradient(135deg,var(--navy) 0%,var(--denim) 60%,#1d4ed8 100%);color:#fff;padding:0}
+  .header-top{padding:8px 24px;background:rgba(0,0,0,.2);font-size:11px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+  .header-top .dot{width:7px;height:7px;border-radius:50%;background:#34d399;display:inline-block;animation:blink 2s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+  .header-main{padding:20px 24px 24px;display:flex;align-items:center;gap:20px;max-width:960px;margin:0 auto}
+  .logo-wrap{background:rgba(255,255,255,.12);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:10px 14px;flex-shrink:0}
+  .logo-wrap img{height:44px;width:auto;display:block}
+  .header-text h1{font-size:clamp(18px,3vw,26px);font-weight:800;line-height:1.2}
+  .header-text p{font-size:12px;color:rgba(255,255,255,.75);margin-top:4px;font-weight:500;text-transform:uppercase;letter-spacing:.06em}
+  .header-badge{margin-left:auto;text-align:right;background:rgba(255,255,255,.1);padding:10px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.12);flex-shrink:0;display:none}
+  @media(min-width:600px){.header-badge{display:block}}
+  .header-badge span{display:block;font-size:10px;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+  .header-badge strong{font-size:13px;color:#fff;display:flex;align-items:center;gap:6px;margin-top:3px}
+
+  /* ── PROGRESS WIZARD ── */
+  .wizard-wrap{max-width:960px;margin:28px auto 0;padding:0 20px}
+  .wizard{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:18px 24px;box-shadow:var(--shadow);display:flex;align-items:center;position:relative}
+  .wizard::before{content:'';position:absolute;top:50%;left:36px;right:36px;height:2px;background:var(--border);transform:translateY(-50%);z-index:0}
+  .wizard-track{content:'';position:absolute;top:50%;left:36px;height:2px;background:var(--blue);transform:translateY(-50%);z-index:0;transition:width .4s ease;width:0}
+  .wizard-steps{display:flex;justify-content:space-between;width:100%;position:relative;z-index:1}
+  .wstep{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+  .wstep-circle{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--slate);transition:all .3s;flex-shrink:0}
+  .wstep-label{font-size:10px;font-weight:600;color:var(--slate);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;display:none}
+  @media(min-width:600px){.wstep-label{display:block}}
+  .wstep.active .wstep-circle{background:var(--denim);border-color:var(--denim);color:#fff;box-shadow:0 0 0 4px #dbeafe}
+  .wstep.active .wstep-label{color:var(--denim)}
+  .wstep.done .wstep-circle{background:var(--green);border-color:var(--green);color:#fff}
+  .wstep.done .wstep-label{color:var(--green)}
+
+  /* ── CONTENT WRAP ── */
+  .content{max-width:960px;margin:24px auto 60px;padding:0 20px}
+
+  /* ── STEP PANELS ── */
+  .step-panel{display:none}
+  .step-panel.active{display:block}
+
+  /* ── CARDS ── */
+  .card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:24px 28px;box-shadow:var(--shadow);margin-bottom:20px}
+  .card-header{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:16px;margin-bottom:20px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap}
+  .card-title{display:flex;align-items:center;gap:10px}
+  .card-icon{width:36px;height:36px;border-radius:10px;background:var(--light);color:var(--denim);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+  .card-title h2{font-size:16px;font-weight:700;color:#0f172a}
+  .card-title p{font-size:12px;color:var(--slate);margin-top:2px}
+  .section-tag{font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+
+  /* ── NOTICE ── */
+  .notice{background:#eff6ff;border-left:4px solid var(--blue);padding:12px 16px;border-radius:0 var(--radius) var(--radius) 0;margin-bottom:20px;font-size:13px;color:#1e3a8a;display:flex;gap:10px;align-items:flex-start}
+  .notice i{margin-top:1px;flex-shrink:0}
+
+  /* ── FORM GRID ── */
+  .grid{display:grid;gap:16px}
+  .grid-2{grid-template-columns:1fr 1fr}
+  .grid-3{grid-template-columns:1fr 1fr 1fr}
+  .grid-4{grid-template-columns:1fr 1fr 1fr 1fr}
+  @media(max-width:640px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}}
+  @media(min-width:641px) and (max-width:800px){.grid-3,.grid-4{grid-template-columns:1fr 1fr}}
+  .col-span-2{grid-column:span 2}
+  .col-span-3{grid-column:span 3}
+  @media(max-width:640px){.col-span-2,.col-span-3{grid-column:span 1}}
+
+  /* ── FORM FIELDS ── */
+  label.field-label{display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+  label.field-label .req{color:var(--red)}
+  input[type=text],input[type=email],input[type=date],input[type=number],input[type=tel],select,textarea{
+    width:100%;font-size:13.5px;font-family:'Inter',sans-serif;color:#1e293b;
+    padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;
+    background:var(--white);outline:none;transition:border-color .2s,box-shadow .2s;
+    -webkit-appearance:none;appearance:none
+  }
+  input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  input[readonly]{background:#f1f5f9;color:var(--slate);cursor:default}
+  textarea{resize:vertical;min-height:70px}
+  select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2364748b' d='M6 8L0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+  .radio-group{display:flex;gap:16px;flex-wrap:wrap}
+  .radio-group label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#374151;cursor:pointer}
+  .radio-group input[type=radio]{width:auto;accent-color:var(--blue)}
+
+  /* ── PHOTO BOX ── */
+  .photo-area{display:flex;gap:14px;align-items:flex-start}
+  .photo-box{width:90px;height:108px;border:2px dashed #cbd5e1;border-radius:10px;background:#f8fafc;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;cursor:pointer;position:relative;transition:border-color .2s}
+  .photo-box:hover{border-color:var(--blue)}
+  .photo-box img{width:100%;height:100%;object-fit:cover;display:none}
+  .photo-box .ph-text{text-align:center;padding:8px;pointer-events:none}
+  .photo-box .ph-text i{font-size:20px;color:#94a3b8;display:block;margin-bottom:4px}
+  .photo-box .ph-text span{font-size:9px;color:#94a3b8;line-height:1.3;display:block;font-weight:600}
+  .photo-upload-btn{font-size:12px;font-weight:600;color:var(--white);background:var(--denim);padding:7px 14px;border-radius:8px;cursor:pointer;display:inline-block;transition:background .2s}
+  .photo-upload-btn:hover{background:#1d4ed8}
+  .photo-remove{font-size:11px;color:var(--red);cursor:pointer;margin-top:4px;display:none}
+  .photo-hint{font-size:10px;color:var(--slate);margin-top:4px}
+
+  /* ── CNIC ── */
+  .cnic-wrap{position:relative}
+  .cnic-wrap input{font-family:'Courier New',monospace;letter-spacing:.05em;font-size:14px;font-weight:600}
+
+  /* ── TABLES ── */
+  .table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border)}
+  table{width:100%;border-collapse:collapse;min-width:500px}
+  thead tr{background:#f1f5f9}
+  th{padding:9px 10px;font-size:10.5px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}
+  td{padding:5px 7px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  td input,td select,td textarea{border-radius:6px;padding:6px 8px;font-size:12.5px;border:1.5px solid #e2e8f0;min-width:60px}
+  td textarea{min-height:52px;min-width:120px}
+  .btn-row-add{font-size:11px;font-weight:700;color:var(--blue);background:#eff6ff;border:1.5px solid #bfdbfe;padding:5px 12px;border-radius:7px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:background .2s}
+  .btn-row-add:hover{background:#dbeafe}
+  .btn-del{background:none;border:none;color:#cbd5e1;cursor:pointer;font-size:14px;padding:4px;border-radius:5px;transition:color .2s}
+  .btn-del:hover{color:var(--red)}
+
+  /* ── SIGNATURE ── */
+  .sig-wrap{border:2px dashed #cbd5e1;border-radius:10px;background:#fdfdfd;overflow:hidden;cursor:crosshair}
+  #sigCanvas{display:block;width:100%;height:120px;touch-action:none}
+  .sig-actions{display:flex;justify-content:flex-end;margin-top:4px}
+  .btn-clear-sig{font-size:11px;color:var(--slate);cursor:pointer;background:none;border:none;font-weight:600;display:flex;align-items:center;gap:4px}
+  .btn-clear-sig:hover{color:var(--red)}
+
+  /* ── DECLARATION ── */
+  .declaration-box{background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius);padding:14px 18px;margin-bottom:20px}
+  .declaration-box p{font-size:13px;font-style:italic;color:#92400e;line-height:1.6}
+
+  /* ── BUTTONS ── */
+  .nav-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:700;padding:11px 24px;border-radius:10px;border:none;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;text-decoration:none}
+  .btn-primary{background:var(--denim);color:#fff}
+  .btn-primary:hover{background:#1d4ed8;box-shadow:0 4px 16px rgba(37,99,235,.35)}
+  .btn-secondary{background:#e2e8f0;color:#374151}
+  .btn-secondary:hover{background:#cbd5e1}
+  .btn-success{background:var(--green);color:#fff}
+  .btn-success:hover{background:#047857;box-shadow:0 4px 16px rgba(5,150,105,.35)}
+  .btn-lg{font-size:16px;padding:14px 32px;border-radius:12px}
+  .btn:disabled{opacity:.6;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+
+  /* ── REVIEW STEP ── */
+  .review-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:640px){.review-grid{grid-template-columns:1fr}}
+  .review-box{background:#f8fafc;border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+  .review-box h4{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+  .review-row{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid #f1f5f9;font-size:12px}
+  .review-row:last-child{border:none}
+  .review-row span:first-child{color:var(--slate)}
+  .review-row span:last-child{font-weight:600;text-align:right;max-width:60%;word-break:break-word}
+
+  /* ── PDF PREVIEW ── */
+  .pdf-preview-wrap{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#525659}
+  .pdf-preview-wrap iframe{width:100%;height:580px;display:block;border:none}
+
+  /* ── SUCCESS ── */
+  .success-overlay{position:fixed;inset:0;background:rgba(15,23,42,.7);backdrop-filter:blur(6px);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;display:none}
+  .success-box{background:#fff;border-radius:20px;max-width:460px;width:100%;padding:40px 36px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.2)}
+  .success-icon{width:72px;height:72px;background:#d1fae5;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--green);margin:0 auto 20px}
+  .success-box h3{font-size:22px;font-weight:800;color:#0f172a;margin-bottom:8px}
+  .success-box p{font-size:14px;color:var(--slate);line-height:1.6;margin-bottom:24px}
+  .success-email{display:inline-block;background:#eff6ff;color:var(--denim);font-weight:700;font-size:13px;padding:6px 14px;border-radius:8px;margin-bottom:20px}
+  .success-actions{display:flex;flex-direction:column;gap:10px}
+  .mailto-btn{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:600;color:var(--slate);background:#f1f5f9;padding:10px;border-radius:10px;text-decoration:none;border:1px solid var(--border);transition:all .2s}
+  .mailto-btn:hover{background:#e2e8f0;color:#1e293b}
+
+  /* ── SPINNER ── */
+  .spinner-overlay{position:fixed;inset:0;background:rgba(255,255,255,.85);backdrop-filter:blur(4px);z-index:998;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+  .spinner{width:48px;height:48px;border:4px solid #e2e8f0;border-top-color:var(--denim);border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .spinner-text{font-size:14px;font-weight:600;color:var(--denim)}
+
+  /* ── FOOTER ── */
+  footer{background:var(--navy);color:#64748b;padding:20px 24px;text-align:center;font-size:12px;border-top:1px solid #1e293b}
+  footer strong{color:#94a3b8}
+
+  /* ── EMAILJS SETUP NOTICE ── */
+  .setup-banner{background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:14px 18px;margin-bottom:24px;font-size:13px;color:#78350f}
+  .setup-banner strong{color:#92400e;display:block;margin-bottom:4px}
+  .setup-banner code{background:#fde68a;padding:1px 6px;border-radius:4px;font-family:monospace;font-size:12px}
+
+  /* misc */
+  .hidden{display:none!important}
+  .text-sm{font-size:12px;color:var(--slate);margin-top:5px}
+  .divider{border:none;border-top:1px dashed var(--border);margin:20px 0}
+  .sub-label{font-size:10px;font-weight:600;color:#94a3b8;text-align:center;margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
+</style>
+</head>
+<body>
+
+<!-- SPINNER -->
+<div class="spinner-overlay" id="spinnerOverlay">
+  <div class="spinner"></div>
+  <div class="spinner-text">Generating PDF & Sending to HR...</div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-box">
+    <div class="success-icon"><i class="fa-solid fa-check"></i></div>
+    <h3>Application Submitted!</h3>
+    <p>Your completed job application PDF has been sent to Kassim Textile HR.</p>
+    <div class="success-email"><i class="fa-solid fa-envelope mr-1"></i> ai.kt5@kassimdenim.com</div>
+    <div class="success-actions">
+      <button class="btn btn-success" onclick="downloadPdf()">
+        <i class="fa-solid fa-download"></i> Download Your PDF Copy
+      </button>
+      <a id="mailtoFallback" href="#" class="mailto-btn">
+        <i class="fa-solid fa-envelope"></i> Also open email client as backup
+      </a>
+      <button class="mailto-btn" onclick="resetForm()" style="cursor:pointer;border:none">
+        <i class="fa-solid fa-arrow-left"></i> Submit Another Application
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <!-- <div class="header-top">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="dot"></span>
+      <span style="color:rgba(255,255,255,.9);font-weight:600">Official Recruitment Portal &nbsp;·&nbsp; Kassim Textile Pvt. Ltd.</span>
+    </div>
+    <span style="color:rgba(255,255,255,.55)"><i class="fa-solid fa-envelope" style="color:#60a5fa;margin-right:4px"></i>ai.kt5@kassimdenim.com</span>
+  </div> -->
+  <div class="header-main">
+    <div class="logo-wrap">
+      <img src="assets/logo.png" alt="Kassim Textile Logo">
+    </div>
+    <div class="header-text">
+      <h1>Kassim Textile Pvt. Ltd.</h1>
+      <p>Job Application Form</p>
+    </div>
+    <!-- <div class="header-badge">
+      <span>Application sent to</span>
+      <strong><i class="fa-solid fa-paper-plane" style="color:#60a5fa"></i> ai.kt5@kassimdenim.com</strong>
+    </div> -->
+  </div>
+</header>
+
+<!-- WIZARD -->
+<div class="wizard-wrap">
+  <div class="wizard">
+    <div class="wizard-track" id="wizardTrack"></div>
+    <div class="wizard-steps">
+      <div class="wstep active" id="ws1" onclick="goTo(1)">
+        <div class="wstep-circle" id="wc1">1</div>
+        <div class="wstep-label">Personal</div>
+      </div>
+      <div class="wstep" id="ws2" onclick="goTo(2)">
+        <div class="wstep-circle" id="wc2">2</div>
+        <div class="wstep-label">Education</div>
+      </div>
+      <div class="wstep" id="ws3" onclick="goTo(3)">
+        <div class="wstep-circle" id="wc3">3</div>
+        <div class="wstep-label">Experience</div>
+      </div>
+      <div class="wstep" id="ws4" onclick="goTo(4)">
+        <div class="wstep-circle" id="wc4">4</div>
+        <div class="wstep-label">References</div>
+      </div>
+      <div class="wstep" id="ws5" onclick="goTo(5)">
+        <div class="wstep-circle" id="wc5">5</div>
+        <div class="wstep-label">Review & Send</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="content">
+
+  <!-- ══════════════════════════════════════════════
+       STEP 1: Personal Information
+  ══════════════════════════════════════════════ -->
+  <div class="step-panel active" id="step1">
+
+    <div class="notice">
+      <i class="fa-solid fa-circle-info"></i>
+      <div><strong>Please fill in this application form accurately.</strong><br>
+      Incomplete forms may lead to disqualification from our selection process.</div>
+    </div>
+
+    <!-- Personal Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="card-icon"><i class="fa-solid fa-user-tie"></i></div>
+          <div>
+            <div class="section-tag">Page 1 of 4</div>
+            <h2>Personal Information</h2>
+            <p>Your complete legal name and demographic details</p>
+          </div>
+        </div>
+
+        <!-- Photo Upload -->
+        <div class="photo-area">
+          <div class="photo-box" id="photoBox" onclick="document.getElementById('photoInput').click()">
+            <img id="photoPreview" src="" alt="Photo">
+            <div class="ph-text" id="photoPlaceholder">
+              <i class="fa-solid fa-camera"></i>
+              <span>Affix Photograph of the Candidate</span>
+            </div>
+          </div>
+          <div>
+            <label class="photo-upload-btn" for="photoInput"><i class="fa-solid fa-upload"></i> Upload Photo</label>
+            <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhoto(this)">
+            <div class="photo-remove" id="photoRemove" onclick="removePhoto()"><i class="fa-solid fa-trash"></i> Remove</div>
+            <div class="photo-hint">Passport size recommended</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-3">
+        <div>
+          <label class="field-label">First Name <span class="req">*</span></label>
+          <input type="text" id="firstName" placeholder="Muhammad" required>
+        </div>
+        <div>
+          <label class="field-label">Middle Name</label>
+          <input type="text" id="middleName" placeholder="Ali">
+        </div>
+        <div>
+          <label class="field-label">Last Name <span class="req">*</span></label>
+          <input type="text" id="lastName" placeholder="Khan" required>
+        </div>
+        <div>
+          <label class="field-label">Father's Name <span class="req">*</span></label>
+          <input type="text" id="fatherName" placeholder="Full Name of Father" required>
+        </div>
+        <div class="col-span-2">
+          <label class="field-label">Position Applied For <span class="req">*</span></label>
+          <input type="text" id="position" placeholder="e.g. Quality Assurance Officer / Assistant Manager Spinning" required>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="grid grid-2">
+        <div>
+          <label class="field-label">You have come to us through <span class="req">*</span></label>
+          <select id="source" required>
+            <option value="">Select source</option>
+            <option value="Employee Referral">Employee Referral</option>
+            <option value="Advertisement">Advertisement</option>
+            <option value="Direct">Direct</option>
+            <option value="Job Sites (Rozee / LinkedIn)">Job Sites (Rozee / LinkedIn)</option>
+            <option value="Others">Others</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">Please Specify Details</label>
+          <input type="text" id="sourceDetails" placeholder="Referral name / portal / ad reference">
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="grid grid-4">
+        <div>
+          <label class="field-label">Gender <span class="req">*</span></label>
+          <select id="gender" required>
+            <option value="M">Male (M)</option>
+            <option value="F">Female (F)</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">Date of Birth <span class="req">*</span></label>
+          <input type="date" id="dob" required onchange="calcAge()">
+        </div>
+        <div>
+          <label class="field-label">Age (Years)</label>
+          <input type="number" id="age" readonly placeholder="Auto">
+        </div>
+        <div>
+          <label class="field-label">Place of Birth</label>
+          <input type="text" id="placeOfBirth" placeholder="e.g. Karachi">
+        </div>
+        <div>
+          <label class="field-label">Citizenship</label>
+          <input type="text" id="citizenship" value="Pakistani">
+        </div>
+        <div>
+          <label class="field-label">Religion</label>
+          <input type="text" id="religion" placeholder="e.g. Islam">
+        </div>
+        <div>
+          <label class="field-label">Marital Status</label>
+          <select id="marital">
+            <option value="Single">Single (No)</option>
+            <option value="Married">Married (Yes)</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">Blood Group</label>
+          <select id="blood">
+            <option value="">—</option>
+            <option>A+</option><option>A-</option>
+            <option>B+</option><option>B-</option>
+            <option>O+</option><option>O-</option>
+            <option>AB+</option><option>AB-</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top:16px">
+        <label class="field-label">CNIC # <span class="req">*</span> <span style="font-weight:400;color:#94a3b8;text-transform:none">(XXXXX-XXXXXXX-X)</span></label>
+        <div class="cnic-wrap" style="max-width:300px">
+          <input type="text" id="cnic" placeholder="42101-1234567-1" maxlength="15" oninput="fmtCnic(this)" required>
+        </div>
+      </div>
+    </div>
+
+    <!-- Address Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="card-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+          <div><h2>Address & Contact Details</h2></div>
+        </div>
+      </div>
+
+      <div class="grid" style="gap:16px">
+        <div>
+          <label class="field-label">Present / Mailing Address <span class="req">*</span></label>
+          <textarea id="presentAddr" rows="2" placeholder="House/Flat No, Street, Area, City" required></textarea>
+        </div>
+        <div>
+          <label class="field-label">Permanent Address <span style="font-weight:400;color:#94a3b8;text-transform:none">(if different from above)</span></label>
+          <textarea id="permAddr" rows="2" placeholder="Leave blank if same as present address"></textarea>
+          <div style="margin-top:6px">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--slate);cursor:pointer">
+              <input type="checkbox" id="sameAddr" onchange="if(this.checked)document.getElementById('permAddr').value=document.getElementById('presentAddr').value"> Same as present address
+            </label>
+          </div>
+        </div>
+        <div>
+          <label class="field-label">Email Address <span class="req">*</span></label>
+          <input type="email" id="email" placeholder="applicant@email.com" required>
+        </div>
+      </div>
+
+      <hr class="divider">
+      <div style="font-size:12px;font-weight:700;color:var(--denim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">
+        <i class="fa-solid fa-phone-volume" style="margin-right:5px"></i> Complete Tele-connect Details
+      </div>
+
+      <div class="grid grid-3">
+        <div>
+          <label class="field-label">Mobile Number (Current) <span class="req">*</span></label>
+          <input type="tel" id="mobile" placeholder="0300-1234567" required>
+        </div>
+        <div>
+          <label class="field-label">Present Residence Tel No.</label>
+          <input type="tel" id="resTel" placeholder="021-3456789">
+        </div>
+        <div>
+          <label class="field-label">Permanent Residence Tel (City Code)</label>
+          <input type="tel" id="permTel" placeholder="City Code - Number">
+        </div>
+      </div>
+
+      <hr class="divider">
+      <div style="font-size:12px;font-weight:700;color:#be123c;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">
+        <i class="fa-solid fa-kit-medical" style="margin-right:5px"></i> Emergency Contact Numbers
+      </div>
+
+      <div class="grid" style="gap:12px">
+        <div class="grid grid-3">
+          <div>
+            <label class="field-label">Name (Contact 1) <span class="req">*</span></label>
+            <input type="text" id="em1Name" placeholder="Emergency Contact Name" required>
+          </div>
+          <div>
+            <label class="field-label">Relationship <span class="req">*</span></label>
+            <input type="text" id="em1Rel" placeholder="e.g. Father, Brother" required>
+          </div>
+          <div>
+            <label class="field-label">Contact Number <span class="req">*</span></label>
+            <input type="tel" id="em1Tel" placeholder="03XX-XXXXXXX" required>
+          </div>
+        </div>
+        <div class="grid grid-3">
+          <div>
+            <label class="field-label">Name (Contact 2)</label>
+            <input type="text" id="em2Name" placeholder="Secondary Emergency Contact">
+          </div>
+          <div>
+            <label class="field-label">Relationship</label>
+            <input type="text" id="em2Rel" placeholder="Relationship">
+          </div>
+          <div>
+            <label class="field-label">Contact Number</label>
+            <input type="tel" id="em2Tel" placeholder="03XX-XXXXXXX">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <div></div>
+      <button class="btn btn-primary" onclick="next(1)">Continue: Education & Family <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       STEP 2: Education & Family
+  ══════════════════════════════════════════════ -->
+  <div class="step-panel" id="step2">
+
+    <!-- Education -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="card-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+          <div>
+            <div class="section-tag">Section I — Part A</div>
+            <h2>Educational Qualification</h2>
+            <p>Highlight your educational background</p>
+          </div>
+        </div>
+        <button class="btn-row-add" onclick="addEduRow()"><i class="fa-solid fa-plus"></i> Add Row</button>
+      </div>
+
+      <div class="table-wrap">
+        <table id="eduTable">
+          <thead><tr>
+            <th>Educational Degree</th>
+            <th>Year of Completion / Pursuing</th>
+            <th>Name of the Institute</th>
+            <th>Grade / %</th>
+            <th>Favourite Subject</th>
+            <th style="width:36px"></th>
+          </tr></thead>
+          <tbody id="eduBody">
+            <tr><td><input type="text" value="Matric / O-Level" placeholder="Degree"></td><td><input type="text" placeholder="2016"></td><td><input type="text" placeholder="School / Board"></td><td><input type="text" placeholder="A+ / 80%"></td><td><input type="text" placeholder="Science"></td><td><button class="btn-del" onclick="delRow(this)" title="Remove"><i class="fa-solid fa-trash"></i></button></td></tr>
+            <tr><td><input type="text" value="Intermediate / A-Level" placeholder="Degree"></td><td><input type="text" placeholder="2018"></td><td><input type="text" placeholder="College"></td><td><input type="text" placeholder="Grade"></td><td><input type="text" placeholder="Subject"></td><td><button class="btn-del" onclick="delRow(this)" title="Remove"><i class="fa-solid fa-trash"></i></button></td></tr>
+            <tr><td><input type="text" value="Graduation / Bachelor" placeholder="Degree"></td><td><input type="text" placeholder="2022"></td><td><input type="text" placeholder="University"></td><td><input type="text" placeholder="CGPA / %"></td><td><input type="text" placeholder="Major"></td><td><button class="btn-del" onclick="delRow(this)" title="Remove"><i class="fa-solid fa-trash"></i></button></td></tr>
+            <tr><td><input type="text" value="Post Graduation / Master" placeholder="Degree"></td><td><input type="text" placeholder="Year / Pursuing"></td><td><input type="text" placeholder="University"></td><td><input type="text" placeholder="Grade"></td><td><input type="text" placeholder="Subject"></td><td><button class="btn-del" onclick="delRow(this)" title="Remove"><i class="fa-solid fa-trash"></i></button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Family -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="card-icon"><i class="fa-solid fa-people-roof"></i></div>
+          <div>
+            <div class="section-tag">Section I — Part B</div>
+            <h2>Family Details</h2>
+          </div>
+        </div>
+        <button class="btn-row-add" onclick="addFamRow()"><i class="fa-solid fa-plus"></i> Add Member</button>
+      </div>
+
+      <div class="table-wrap">
+        <table id="famTable">
+          <thead><tr>
+            <th>Relation</th><th>Name</th><th>Dependent</th>
+            <th>Profession</th><th>Office Name & Address</th><th>Contact</th>
+            <th style="width:36px"></th>
+          </tr></thead>
+          <tbody id="famBody">
+            <tr><td><input type="text" value="Spouse" placeholder="Relation"></td><td><input type="text" placeholder="Name"></td><td><select style="min-width:70px"><option>Yes</option><option>No</option></select></td><td><input type="text" placeholder="Profession"></td><td><input type="text" placeholder="Office / Address"></td><td><input type="tel" placeholder="Phone"></td><td><button class="btn-del" onclick="delRow(this)"><i class="fa-solid fa-trash"></i></button></td></tr>
+            <tr><td><input type="text" value="Father" placeholder="Relation"></td><td><input type="text" placeholder="Name"></td><td><select style="min-width:70px"><option>Yes</option><option>No</option></select></td><td><input type="text" placeholder="Profession"></td><td><input type="text" placeholder="Office / Address"></td><td><input type="tel" placeholder="Phone"></td><td><button class="btn-del" onclick="delRow(this)"><i class="fa-solid fa-trash"></i></button></td></tr>
+            <tr><td><input type="text" value="Mother" placeholder="Relation"></td><td><input type="text" placeholder="Name"></td><td><select style="min-width:70px"><option>Yes</option><option>No</option></select></td><td><input type="text" placeholder="Housewife"></td><td><input type="text" placeholder="Home"></td><td><input type="tel" placeholder="Phone"></td><td><button class="btn-del" onclick="delRow(this)"><i class="fa-solid fa-trash"></i></button></td></tr>
+            <tr><td><input type="text" value="Child 1" placeholder="Relation"></td><td><input type="text" placeholder="Name"></td><td><select style="min-width:70px"><option>Yes</option><option>No</option></select></td><td><input type="text" placeholder="Student"></td><td><input type="text" placeholder="School / College"></td><td><input type="tel" placeholder="Phone"></td><td><button class="btn-del" onclick="delRow(this)"><i class="fa-solid fa-trash"></i></button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goTo(1)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+      <button class="btn btn-primary" onclick="goTo(3)">Continue: Work Experience <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       STEP 3: Work Experience & Compensation
+  ══════════════════════════════════════════════ -->
+  <div class="step-panel" id="step3">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="card-icon"><i class="fa-solid fa-briefcase"></i></div>
+          <div>
+            <div class="section-tag">Section II — Part A</div>
+            <h2>Work Experience</h2>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div class="radio-group">
+            <label><input type="radio" name="worked" value="Yes" checked onchange="toggleExp(true)"> Yes (Experienced)</label>
+            <label><input type="radio" name="worked" value="No" onchange="toggleExp(false)"> No (Fresh Graduate)</label>
+          </div>
+          <button class="btn-row-add" onclick="addExpRow()"><i class="fa-solid fa-plus"></i> Add Row</button>
+        </div>
+      </div>
+
+      <div id="expTableWrap" class="table-wrap">
+        <table id="expTable">
+          <thead>
+            <tr>
+              <th rowspan="2" style="vertical-align:middle">Employer's Name & Location</th>
+              <th colspan="2" style="text-align:center">Salary</th>
+              <th colspan="2" style="text-align:center">Designation</th>
+              <th colspan="2" style="text-align:center">Period Worked</th>
+              <th rowspan="2" style="vertical-align:middle">Functions</th>
+              <th rowspan="2" style="vertical-align:middle">Reason for Leaving</th>
+              <th rowspan="2" style="width:36px"></th>
+            </tr>
+            <tr>
+              <th>Start</th><th>Leaving</th>
+              <th>Start</th><th>Leaving</th>
+              <th>From</th><th>To</th>
+            </tr>
+          </thead>
+          <tbody id="expBody">
+            <tr>
+              <td><input type="text" placeholder="Company & City" style="min-width:120px"></td>
+              <td><input type="text" placeholder="Start PKR" style="min-width:70px"></td>
+              <td><input type="text" placeholder="Last PKR" style="min-width:70px"></td>
+              <td><input type="text" placeholder="Initial Title"></td>
+              <td><input type="text" placeholder="Last Title"></td>
+              <td><input type="text" placeholder="MM/YYYY" style="min-width:70px"></td>
+              <td><input type="text" placeholder="MM/YYYY" style="min-width:70px"></td>
+              <td><textarea placeholder="Key responsibilities" style="min-width:140px"></textarea></td>
+              <td><input type="text" placeholder="Reason" style="min-width:90px"></td>
+              <td><button class="btn-del" onclick="delRow(this)"><i class="fa-solid fa-trash"></i></button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid grid-2" style="margin-top:20px">
+        <div>
+          <label class="field-label">Organization Structure / Reporting Relationships</label>
+          <textarea id="orgStr" rows="3" placeholder="e.g. Reporting to GM Operations; 4 officers report to me"></textarea>
+        </div>
+        <div>
+          <label class="field-label">Present Job Responsibilities</label>
+          <textarea id="jobResp" rows="3" placeholder="Summary of your key duties and achievements"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Compensation -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="card-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+          <div>
+            <div class="section-tag">Section II — Part B</div>
+            <h2>Compensation Details</h2>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-3">
+        <div>
+          <label class="field-label">Expected Salary (PKR) <span class="req">*</span></label>
+          <input type="text" id="expSalary" placeholder="e.g. 150,000 / Negotiable" required>
+        </div>
+        <div>
+          <label class="field-label">Other Benefits Expected</label>
+          <input type="text" id="otherBenefits" placeholder="Medical, Fuel, Provident Fund">
+        </div>
+        <div>
+          <label class="field-label">Notice Period / Availability <span class="req">*</span></label>
+          <input type="text" id="availability" placeholder="Immediate / 1 Month Notice" required>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goTo(2)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+      <button class="btn btn-primary" onclick="goTo(4)">Continue: References & Sign <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       STEP 4: References, Health, Relatives & Signature
+  ══════════════════════════════════════════════ -->
+  <div class="step-panel" id="step4">
+
+    <!-- Health -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="card-icon"><i class="fa-solid fa-shield-heart"></i></div>
+          <div>
+            <div class="section-tag">Section III</div>
+            <h2>Health & Company History</h2>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;gap:16px">
+        <div>
+          <label class="field-label">Do you have any disease / been hospitalized in the last one year? <span class="req">*</span></label>
+          <div class="radio-group" style="margin-bottom:8px">
+            <label><input type="radio" name="disease" value="No" checked onchange="toggleBox('diseaseBox',false)"> No</label>
+            <label><input type="radio" name="disease" value="Yes" onchange="toggleBox('diseaseBox',true)"> Yes</label>
+          </div>
+          <input type="text" id="diseaseBox" placeholder="Please specify illness / hospitalization details" class="hidden">
+        </div>
+        <div>
+          <label class="field-label">Have you applied to any of our Units before? <span class="req">*</span></label>
+          <div class="radio-group" style="margin-bottom:8px">
+            <label><input type="radio" name="applied" value="No" checked onchange="toggleBox('appliedBox',false)"> No</label>
+            <label><input type="radio" name="applied" value="Yes" onchange="toggleBox('appliedBox',true)"> Yes</label>
+          </div>
+          <input type="text" id="appliedBox" placeholder="If Yes, specify when and which unit" class="hidden">
+        </div>
+      </div>
+    </div>
+
+    <!-- References -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="card-icon"><i class="fa-solid fa-address-book"></i></div>
+          <div><h2>References</h2><p>Provide 2 references from previous employers or mentors</p></div>
+        </div>
+        <button class="btn-row-add" onclick="addRefRow()"><i class="fa-solid fa-plus"></i> Add</button>
+      </div>
+      <div class="table-wrap">
+        <table id="refTable">
+          <thead><tr>
+            <th style="width:36px">S.No</th><th>Name</th><th>Relationship</th>
+            <th>Contact Number</th><th>Title / Company</th>
+            <th style="width:36px"></th>
+          </tr></thead>
+          <tbody id="refBody">
+            <tr><td style="text-align:center;font-weight:700">1</td><td><input type="text" placeholder="Full Name"></td><td><input type="text" placeholder="Ex-Manager / Colleague"></td><td><input type="tel" placeholder="03XX-XXXXXXX"></td><td><input type="text" placeholder="Designation & Organization"></td><td><button class="btn-del" onclick="delRow(this)"><i class="fa-solid fa-trash"></i></button></td></tr>
+            <tr><td style="text-align:center;font-weight:700">2</td><td><input type="text" placeholder="Full Name"></td><td><input type="text" placeholder="Ex-Manager / Colleague"></td><td><input type="tel" placeholder="03XX-XXXXXXX"></td><td><input type="text" placeholder="Designation & Organization"></td><td><button class="btn-del" onclick="delRow(this)"><i class="fa-solid fa-trash"></i></button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Relatives -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="card-icon"><i class="fa-solid fa-users"></i></div>
+          <div><h2>Relatives in Kassim / Rainbow Units</h2><p style="color:#be123c;font-weight:600;font-size:12px">(Mandatory declaration)</p></div>
+        </div>
+        <div class="radio-group">
+          <label><input type="radio" name="hasRel" value="No" checked onchange="toggleRelatives(false)"> No</label>
+          <label><input type="radio" name="hasRel" value="Yes" onchange="toggleRelatives(true)"> Yes</label>
+        </div>
+      </div>
+      <div id="relWrap" class="hidden">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+          <button class="btn-row-add" onclick="addRelRow()"><i class="fa-solid fa-plus"></i> Add</button>
+        </div>
+        <div class="table-wrap">
+          <table id="relTable">
+            <thead><tr>
+              <th style="width:36px">S.No</th><th>Name</th><th>Designation</th><th>Dept</th><th>Relationship</th>
+              <th style="width:36px"></th>
+            </tr></thead>
+            <tbody id="relBody">
+              <tr><td style="text-align:center;font-weight:700">1</td><td><input type="text" placeholder="Name"></td><td><input type="text" placeholder="Designation"></td><td><input type="text" placeholder="Department"></td><td><input type="text" placeholder="e.g. Uncle, Cousin"></td><td><button class="btn-del" onclick="delRow(this)"><i class="fa-solid fa-trash"></i></button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signature & Declaration -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="card-icon"><i class="fa-solid fa-file-signature"></i></div>
+          <div><h2>Declaration & Signature</h2></div>
+        </div>
+      </div>
+
+      <div class="declaration-box">
+        <p>"I hereby confirm that all information, I have provided is true, complete, and accurate to the best of my knowledge and I take full responsibility for its correctness."</p>
+      </div>
+
+      <div class="grid grid-2">
+        <div>
+          <label class="field-label">Digital Signature <span class="req">*</span></label>
+          <div class="sig-wrap">
+            <canvas id="sigCanvas"></canvas>
+          </div>
+          <div class="sig-actions">
+            <button type="button" class="btn-clear-sig" onclick="clearSig()"><i class="fa-solid fa-rotate-left"></i> Clear Signature</button>
+          </div>
+          <div class="text-sm">Sign using your finger, stylus, or mouse</div>
+        </div>
+        <div>
+          <label class="field-label">Date of Submission</label>
+          <input type="date" id="sigDate">
+          <div class="text-sm">Today's date is auto-filled</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goTo(3)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+      <button class="btn btn-primary" onclick="next(4)">Review & Preview PDF <i class="fa-solid fa-file-pdf"></i></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       STEP 5: Review & Submit
+  ══════════════════════════════════════════════ -->
+  <div class="step-panel" id="step5">
+
+    <!-- EMAILJS SETUP NOTICE — Remove this after setting up EmailJS -->
+    <div class="setup-banner" id="setupBanner">
+      <strong><i class="fa-solid fa-gear"></i> One-time Setup Required to Enable Auto-Email Sending:</strong>
+      1. Sign up free at <strong>emailjs.com</strong> → create an Email Service → create a Template (Template ID: <code>kassim_job_app</code>)<br>
+      2. In the template, add a variable <code>{{pdf_link}}</code> for the PDF download link and <code>{{applicant_name}}</code>, <code>{{position}}</code>, <code>{{cnic}}</code>, <code>{{email}}</code>, <code>{{phone}}</code><br>
+      3. Set recipient as <strong>ai.kt5@kassimdenim.com</strong> in the template<br>
+      4. Replace the 3 values in <code>js/app.js</code>: <code>EMAILJS_PUBLIC_KEY</code>, <code>EMAILJS_SERVICE_ID</code>, <code>EMAILJS_TEMPLATE_ID</code><br>
+      5. <strong>All PDF + form data is auto-generated in browser — works 100% free on Vercel!</strong>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="review-grid" style="margin-bottom:20px">
+      <div class="review-box">
+        <h4><i class="fa-solid fa-user"></i> Candidate Profile</h4>
+        <div class="review-row"><span>Full Name:</span><span id="rv-name">—</span></div>
+        <div class="review-row"><span>Position Applied:</span><span id="rv-pos" style="color:var(--blue)">—</span></div>
+        <div class="review-row"><span>CNIC #:</span><span id="rv-cnic" style="font-family:monospace">—</span></div>
+        <div class="review-row"><span>Gender / Age:</span><span id="rv-gender">—</span></div>
+        <div class="review-row"><span>Marital Status:</span><span id="rv-marital">—</span></div>
+      </div>
+      <div class="review-box">
+        <h4><i class="fa-solid fa-address-card"></i> Contact Info</h4>
+        <div class="review-row"><span>Email:</span><span id="rv-email">—</span></div>
+        <div class="review-row"><span>Mobile:</span><span id="rv-mobile">—</span></div>
+        <div class="review-row"><span>Emergency:</span><span id="rv-em">—</span></div>
+        <div class="review-row"><span>Expected Salary:</span><span id="rv-salary" style="color:var(--green);font-weight:700">—</span></div>
+        <div class="review-row"><span>Availability:</span><span id="rv-avail">—</span></div>
+      </div>
+    </div>
+
+    <!-- PDF Preview -->
+    <div class="card" style="padding:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:22px;color:#dc2626"><i class="fa-solid fa-file-pdf"></i></span>
+          <div>
+            <div style="font-weight:700;font-size:15px">Official 4-Page Application Preview</div>
+            <div style="font-size:11px;color:var(--slate)">Exact replica of Kassim Textile Pvt. Ltd. Job Application Form</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-secondary" style="font-size:12px;padding:7px 14px" onclick="refreshPreview()">
+            <i class="fa-solid fa-arrows-rotate"></i> Refresh
+          </button>
+          <button class="btn btn-primary" style="font-size:12px;padding:7px 14px" onclick="downloadPdf()">
+            <i class="fa-solid fa-download"></i> Download PDF
+          </button>
+        </div>
+      </div>
+      <div class="pdf-preview-wrap">
+        <iframe id="pdfFrame" title="PDF Preview"></iframe>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div style="background:linear-gradient(135deg,var(--navy),var(--denim));border-radius:16px;padding:28px;color:#fff;display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px">
+      <i class="fa-solid fa-paper-plane" style="font-size:28px;color:#60a5fa"></i>
+      <div>
+        <div style="font-size:18px;font-weight:800;margin-bottom:4px">Submit Official Application</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.75)">Your signed 4-page PDF will be sent directly to <strong style="color:#fff">ai.kt5@kassimdenim.com</strong></div>
+      </div>
+      <button class="btn btn-success btn-lg" id="submitBtn" onclick="submitForm()">
+        <i class="fa-solid fa-circle-check"></i> Submit Application Now
+      </button>
+      <div style="font-size:11px;color:rgba(255,255,255,.5)">A PDF copy will also auto-download to your device</div>
+    </div>
+
+    <div class="nav-row" style="margin-top:16px">
+      <button class="btn btn-secondary" onclick="goTo(4)"><i class="fa-solid fa-arrow-left"></i> Back to Edit</button>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<!-- FOOTER -->
+<footer>
+  <strong>Kassim Textile Pvt. Ltd. (Kassim Denim)</strong> &nbsp;·&nbsp;
+  <!-- Digital Recruitment Portal &nbsp;·&nbsp;
+  <a href="mailto:ai.kt5@kassimdenim.com" style="color:#60a5fa">ai.kt5@kassimdenim.com</a> -->
+</footer>
+
+<!-- SCRIPTS -->
+<script src="js/jspdf.umd.min.js"></script>
+<script src="js/jspdf.plugin.autotable.min.js"></script>
+<script src="js/signature_pad.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="js/logo.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
