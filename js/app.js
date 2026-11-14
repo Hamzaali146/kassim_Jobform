@@ -1,26 +1,21 @@
 // ══════════════════════════════════════════════════════════════════
 // KASSIM TEXTILE PVT. LTD. — JOB APPLICATION PORTAL
-// Pure Frontend · Vercel-Ready · EmailJS for email delivery
-// PDF output is an exact replica of the official Word application form
+// Candidate flow:  fill form  →  Submit  →  "Thank you" screen
+// (no preview, no download, HR email never shown to the candidate)
 // ══════════════════════════════════════════════════════════════════
 
-// ── CONFIGURE THESE 3 VALUES AFTER SETTING UP EMAILJS ──────────────
-const EMAILJS_PUBLIC_KEY   = 'YOUR_EMAILJS_PUBLIC_KEY';   // from emailjs.com → Account → Public Key
-const EMAILJS_SERVICE_ID   = 'YOUR_SERVICE_ID';            // Email Services tab
-const EMAILJS_TEMPLATE_ID  = 'YOUR_TEMPLATE_ID';           // Email Templates tab
-// ───────────────────────────────────────────────────────────────────
+// Submissions are POSTed to the Vercel serverless function in /api/submit.js,
+// which emails them (with the PDF attached) to HR over SMTP.
+const SUBMIT_ENDPOINT = '/api/submit';
 
-const HR_EMAIL = 'ai.kt5@kassimdenim.com';
 let sigPad = null;
 let photoB64 = null;      // JPEG data-URL (resized)
-let photoDim = null;      // {w,h} of the resized photo
-let currentPdfDoc = null;
+let photoDim = null;      // {w,h}
 let currentStep = 1;
-let previewUrl = null;
+let submitting = false;
 
 // ══════════════════════════════════════════════════════════════════
-// PDF BUILDER — draws the 4-page form at the same positions as the
-// original Word/PDF template (Letter, 612 x 792 pt)
+// PDF BUILDER — exact replica of the official Word form (Letter, pt)
 // ══════════════════════════════════════════════════════════════════
 function buildPdf(d, JsPDF) {
   const doc = new JsPDF({ unit: 'pt', format: 'letter', compress: true });
@@ -327,44 +322,35 @@ function buildPdf(d, JsPDF) {
   return doc;
 }
 
+
 // ══════════════════════════════════════════════════════════════════
 // UI LOGIC
 // ══════════════════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
 
-// ── INIT ────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   initSignaturePad();
   const t = new Date(), pad = n => String(n).padStart(2, '0');
-  document.getElementById('sigDate').value = `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}`;
-  if (EMAILJS_PUBLIC_KEY !== 'YOUR_EMAILJS_PUBLIC_KEY' && window.emailjs) {
-    emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
-    document.getElementById('setupBanner').style.display = 'none';
-  }
+  $('sigDate').value = `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}`;
 });
 
 // ── SIGNATURE PAD ────────────────────────────────────────────────────
 function resizeSig() {
-  const canvas = document.getElementById('sigCanvas');
+  const canvas = $('sigCanvas');
   if (!canvas || !sigPad) return;
   const dpr = Math.max(window.devicePixelRatio || 1, 1);
   const rect = canvas.getBoundingClientRect();
-  if (!rect.width) return;                                   // panel hidden
-  if (canvas.width === Math.round(rect.width * dpr)) return; // already sized, keep signature
+  if (!rect.width) return;
+  if (canvas.width === Math.round(rect.width * dpr)) return;
   const data = !sigPad.isEmpty() ? sigPad.toData() : null;
-  canvas.width = rect.width * dpr;
-  canvas.height = 120 * dpr;
+  canvas.width = rect.width * dpr; canvas.height = 120 * dpr;
   canvas.getContext('2d').scale(dpr, dpr);
   sigPad.clear();
   if (data) sigPad.fromData(data);
 }
 function initSignaturePad() {
-  const canvas = document.getElementById('sigCanvas');
-  if (!canvas) return;
-  sigPad = new SignaturePad(canvas, {
-    backgroundColor: 'rgba(0,0,0,0)',          // transparent so it sits cleanly on the form line
-    penColor: 'rgb(15,23,120)',
-    minWidth: 1.2, maxWidth: 2.8
-  });
+  const canvas = $('sigCanvas'); if (!canvas) return;
+  sigPad = new SignaturePad(canvas, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(15,23,120)', minWidth: 1.2, maxWidth: 2.8 });
   window.addEventListener('resize', resizeSig);
   setTimeout(resizeSig, 100);
 }
@@ -372,356 +358,229 @@ function clearSig() { sigPad && sigPad.clear(); }
 
 // ── PHOTO ────────────────────────────────────────────────────────────
 function handlePhoto(input) {
-  const file = input.files[0];
-  if (!file) return;
+  const file = input.files[0]; if (!file) return;
   if (file.size > 5 * 1024 * 1024) { alert('Photo must be < 5MB'); return; }
   const reader = new FileReader();
   reader.onload = e => {
     const img = new Image();
     img.onload = () => {
-      // resize + convert to JPEG so the PDF stays small and always embeds correctly
       const k = Math.min(1, 420 / Math.max(img.width, img.height));
       const c = document.createElement('canvas');
       c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
-      const x = c.getContext('2d');
-      x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height);
-      x.drawImage(img, 0, 0, c.width, c.height);
-      photoB64 = c.toDataURL('image/jpeg', 0.85);
-      photoDim = { w: c.width, h: c.height };
-      document.getElementById('photoPreview').src = photoB64;
-      document.getElementById('photoPreview').style.display = 'block';
-      document.getElementById('photoPlaceholder').style.display = 'none';
-      document.getElementById('photoRemove').style.display = 'block';
+      const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+      photoB64 = c.toDataURL('image/jpeg', 0.85); photoDim = { w: c.width, h: c.height };
+      $('photoPreview').src = photoB64; $('photoPreview').style.display = 'block';
+      $('photoPlaceholder').style.display = 'none'; $('photoRemove').style.display = 'block';
     };
     img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
 function removePhoto() {
-  photoB64 = null; photoDim = null;
-  document.getElementById('photoInput').value = '';
-  document.getElementById('photoPreview').style.display = 'none';
-  document.getElementById('photoPlaceholder').style.display = 'flex';
-  document.getElementById('photoRemove').style.display = 'none';
+  photoB64 = null; photoDim = null; $('photoInput').value = '';
+  $('photoPreview').style.display = 'none'; $('photoPlaceholder').style.display = 'flex'; $('photoRemove').style.display = 'none';
 }
 
-// ── CNIC ─────────────────────────────────────────────────────────────
+// ── CNIC / AGE ───────────────────────────────────────────────────────
 function fmtCnic(el) {
   let v = el.value.replace(/\D/g, '').slice(0, 13);
   if (v.length > 12) v = v.slice(0,5)+'-'+v.slice(5,12)+'-'+v.slice(12);
   else if (v.length > 5) v = v.slice(0,5)+'-'+v.slice(5);
   el.value = v;
 }
-
-// ── AGE CALC ──────────────────────────────────────────────────────────
 function calcAge() {
-  const dob = new Date(document.getElementById('dob').value);
-  if (isNaN(dob)) return;
+  const dob = new Date($('dob').value); if (isNaN(dob)) return;
   let age = new Date().getFullYear() - dob.getFullYear();
   const m = new Date().getMonth() - dob.getMonth();
   if (m < 0 || (m === 0 && new Date().getDate() < dob.getDate())) age--;
-  document.getElementById('age').value = age >= 0 ? age : '';
+  $('age').value = age >= 0 ? age : '';
 }
 
 // ── HELPERS ──────────────────────────────────────────────────────────
-function toggleBox(id, show) {
-  document.getElementById(id).classList.toggle('hidden', !show);
-}
-function toggleExp(show) {
-  document.getElementById('expTableWrap').style.opacity = show ? '1' : '0.4';
-  document.getElementById('expTableWrap').style.pointerEvents = show ? 'auto' : 'none';
-}
-function toggleRelatives(show) {
-  document.getElementById('relWrap').classList.toggle('hidden', !show);
-}
-function renumber(bodyId) {
-  document.querySelectorAll(`#${bodyId} tr`).forEach((tr, i) => { tr.cells[0].textContent = i + 1; });
-}
+function toggleBox(id, show) { $(id).classList.toggle('hidden', !show); }
+function toggleExp(show) { $('expTableWrap').style.opacity = show ? '1' : '0.4'; $('expTableWrap').style.pointerEvents = show ? 'auto' : 'none'; }
+function toggleRelatives(show) { $('relWrap').classList.toggle('hidden', !show); }
+function renumber(bodyId) { document.querySelectorAll(`#${bodyId} tr`).forEach((tr, i) => { tr.cells[0].textContent = i + 1; }); }
 function delRow(btn) {
   const tb = btn.closest('tbody');
-  if (tb.rows.length > 1) {
-    btn.closest('tr').remove();
-    if (tb.id === 'refBody' || tb.id === 'relBody') renumber(tb.id);
-  } else alert('At least one row is required.');
+  if (tb.rows.length > 1) { btn.closest('tr').remove(); if (tb.id === 'refBody' || tb.id === 'relBody') renumber(tb.id); }
+  else alert('At least one row is required.');
 }
-
-// ── ADD TABLE ROWS ────────────────────────────────────────────────────
 const DEL_BTN = '<button class="btn-del" onclick="delRow(this)"><i class="fa-solid fa-trash"></i></button>';
-function addEduRow() {
-  document.getElementById('eduBody').insertAdjacentHTML('beforeend', `
-    <tr><td><input type="text" placeholder="Degree"></td><td><input type="text" placeholder="Year"></td><td><input type="text" placeholder="Institute"></td><td><input type="text" placeholder="Grade / %"></td><td><input type="text" placeholder="Subject"></td><td>${DEL_BTN}</td></tr>`);
-}
-function addFamRow() {
-  document.getElementById('famBody').insertAdjacentHTML('beforeend', `
-    <tr><td><input type="text" value="Child" placeholder="Relation"></td><td><input type="text" placeholder="Name"></td><td><select style="min-width:70px"><option>Yes</option><option>No</option></select></td><td><input type="text" placeholder="Profession"></td><td><input type="text" placeholder="Office"></td><td><input type="tel" placeholder="Phone"></td><td>${DEL_BTN}</td></tr>`);
-}
-function addExpRow() {
-  document.getElementById('expBody').insertAdjacentHTML('beforeend', `
-    <tr><td><input type="text" placeholder="Company & City" style="min-width:120px"></td><td><input type="text" placeholder="Start PKR"></td><td><input type="text" placeholder="Last PKR"></td><td><input type="text" placeholder="Initial Title"></td><td><input type="text" placeholder="Last Title"></td><td><input type="text" placeholder="MM/YYYY"></td><td><input type="text" placeholder="MM/YYYY"></td><td><textarea placeholder="Key functions" style="min-width:140px"></textarea></td><td><input type="text" placeholder="Reason" style="min-width:90px"></td><td>${DEL_BTN}</td></tr>`);
-}
-function addRefRow() {
-  const n = document.getElementById('refBody').rows.length + 1;
-  document.getElementById('refBody').insertAdjacentHTML('beforeend', `
-    <tr><td style="text-align:center;font-weight:700">${n}</td><td><input type="text" placeholder="Full Name"></td><td><input type="text" placeholder="Relationship"></td><td><input type="tel" placeholder="Contact"></td><td><input type="text" placeholder="Title / Company"></td><td>${DEL_BTN}</td></tr>`);
-}
-function addRelRow() {
-  const n = document.getElementById('relBody').rows.length + 1;
-  document.getElementById('relBody').insertAdjacentHTML('beforeend', `
-    <tr><td style="text-align:center;font-weight:700">${n}</td><td><input type="text" placeholder="Name"></td><td><input type="text" placeholder="Designation"></td><td><input type="text" placeholder="Dept"></td><td><input type="text" placeholder="Relationship"></td><td>${DEL_BTN}</td></tr>`);
-}
+function addEduRow() { $('eduBody').insertAdjacentHTML('beforeend', `<tr><td><input type="text" placeholder="Degree"></td><td><input type="text" placeholder="Year"></td><td><input type="text" placeholder="Institute"></td><td><input type="text" placeholder="Grade / %"></td><td><input type="text" placeholder="Subject"></td><td>${DEL_BTN}</td></tr>`); }
+function addFamRow() { $('famBody').insertAdjacentHTML('beforeend', `<tr><td><input type="text" value="Child" placeholder="Relation"></td><td><input type="text" placeholder="Name"></td><td><select style="min-width:70px"><option>Yes</option><option>No</option></select></td><td><input type="text" placeholder="Profession"></td><td><input type="text" placeholder="Office"></td><td><input type="tel" placeholder="Phone"></td><td>${DEL_BTN}</td></tr>`); }
+function addExpRow() { $('expBody').insertAdjacentHTML('beforeend', `<tr><td><input type="text" placeholder="Company & City" style="min-width:120px"></td><td><input type="text" placeholder="Start PKR"></td><td><input type="text" placeholder="Last PKR"></td><td><input type="text" placeholder="Initial Title"></td><td><input type="text" placeholder="Last Title"></td><td><input type="text" placeholder="MM/YYYY"></td><td><input type="text" placeholder="MM/YYYY"></td><td><textarea placeholder="Key functions" style="min-width:140px"></textarea></td><td><input type="text" placeholder="Reason" style="min-width:90px"></td><td>${DEL_BTN}</td></tr>`); }
+function addRefRow() { const n = $('refBody').rows.length + 1; $('refBody').insertAdjacentHTML('beforeend', `<tr><td style="text-align:center;font-weight:700">${n}</td><td><input type="text" placeholder="Full Name"></td><td><input type="text" placeholder="Relationship"></td><td><input type="tel" placeholder="Contact"></td><td><input type="text" placeholder="Title / Company"></td><td>${DEL_BTN}</td></tr>`); }
+function addRelRow() { const n = $('relBody').rows.length + 1; $('relBody').insertAdjacentHTML('beforeend', `<tr><td style="text-align:center;font-weight:700">${n}</td><td><input type="text" placeholder="Name"></td><td><input type="text" placeholder="Designation"></td><td><input type="text" placeholder="Dept"></td><td><input type="text" placeholder="Relationship"></td><td>${DEL_BTN}</td></tr>`); }
 
-// ── WIZARD ────────────────────────────────────────────────────────────
+// ── WIZARD (4 steps) ─────────────────────────────────────────────────
 function goTo(n) {
   document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById(`step${n}`).classList.add('active');
-  for (let i = 1; i <= 5; i++) {
-    const ws = document.getElementById(`ws${i}`);
-    const wc = document.getElementById(`wc${i}`);
+  $(`step${n}`).classList.add('active');
+  for (let i = 1; i <= 4; i++) {
+    const ws = $(`ws${i}`), wc = $(`wc${i}`);
     ws.classList.remove('active', 'done');
     if (i === n) { ws.classList.add('active'); wc.innerHTML = i; }
     else if (i < n) { ws.classList.add('done'); wc.innerHTML = '<i class="fa-solid fa-check" style="font-size:11px"></i>'; }
-    else { wc.innerHTML = i; }
+    else wc.innerHTML = i;
   }
-  document.getElementById('wizardTrack').style.width = `calc((100% - 72px) * ${(n - 1) / 4})`;
+  $('wizardTrack').style.width = `calc((100% - 72px) * ${(n - 1) / 3})`;
   currentStep = n;
   window.scrollTo({ top: 0, behavior: 'smooth' });
-
-  if (n === 4) setTimeout(resizeSig, 50);   // size canvas once visible (keeps existing signature)
-  if (n === 5) { populateReview(); generatePdf(); }
+  if (n === 4) setTimeout(resizeSig, 50);
 }
 
-function next(from) {
-  if (from === 1) {
-    const checks = [
-      {id:'firstName',label:'First Name'},{id:'lastName',label:'Last Name'},
-      {id:'fatherName',label:"Father's Name"},{id:'position',label:'Position Applied For'},
-      {id:'source',label:'Source (how you found us)'},{id:'dob',label:'Date of Birth'},
-      {id:'cnic',label:'CNIC #'},{id:'presentAddr',label:'Present Address'},
-      {id:'email',label:'Email Address'},{id:'mobile',label:'Mobile Number'},
-      {id:'em1Name',label:'Emergency Contact Name'},{id:'em1Rel',label:'Emergency Relationship'},
-      {id:'em1Tel',label:'Emergency Contact Number'}
-    ];
-    for (const c of checks) {
-      const el = document.getElementById(c.id);
-      if (!el || !el.value.trim()) {
-        alert(`Please fill in: ${c.label}`);
-        el && el.focus();
-        return;
-      }
-    }
-    const emailEl = document.getElementById('email');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailEl.value)) {
-      alert('Please enter a valid email address'); emailEl.focus(); return;
-    }
+// ── VALIDATION ───────────────────────────────────────────────────────
+const REQUIRED = {
+  1: [['firstName','First Name'],['lastName','Last Name'],['fatherName',"Father's Name"],['position','Position Applied For'],
+      ['source','Source (how you found us)'],['dob','Date of Birth'],['cnic','CNIC #'],['presentAddr','Present Address'],
+      ['email','Email Address'],['mobile','Mobile Number'],['em1Name','Emergency Contact Name'],
+      ['em1Rel','Emergency Relationship'],['em1Tel','Emergency Contact Number']],
+  3: [['expSalary','Expected Salary'],['availability','Availability / Notice Period']]
+};
+// returns true if the step is OK; otherwise jumps to it and tells the candidate
+function validateStep(n) {
+  for (const [id, label] of (REQUIRED[n] || [])) {
+    const el = $(id);
+    if (!el || !el.value.trim()) { goTo(n); alert(`Please fill in: ${label}`); el && el.focus(); return false; }
   }
-  if (from === 4) {
-    const sal = document.getElementById('expSalary').value.trim();
-    const avl = document.getElementById('availability').value.trim();
-    if (!sal) { alert('Please fill in Expected Salary (Step 3)'); goTo(3); document.getElementById('expSalary').focus(); return; }
-    if (!avl) { alert('Please fill in Availability / Notice Period (Step 3)'); goTo(3); document.getElementById('availability').focus(); return; }
-    if (sigPad && sigPad.isEmpty()) {
-      if (!confirm('You have not signed the form. Continue without signature?')) return;
-    }
+  if (n === 1) {
+    if (!/^\d{5}-\d{7}-\d$/.test($('cnic').value)) { goTo(1); alert('CNIC must be in the format XXXXX-XXXXXXX-X'); $('cnic').focus(); return false; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('email').value)) { goTo(1); alert('Please enter a valid email address'); $('email').focus(); return false; }
   }
-  goTo(from + 1);
+  if (n === 4 && sigPad && sigPad.isEmpty()) { goTo(4); alert('Please sign the form in the signature box before submitting.'); return false; }
+  return true;
 }
+function next(from) { if (validateStep(from)) goTo(from + 1); }
 
-// ── COLLECT DATA ──────────────────────────────────────────────────────
-function getV(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+// ── COLLECT DATA ─────────────────────────────────────────────────────
+function getV(id) { const el = $(id); return el ? el.value.trim() : ''; }
 function getRadio(name) { const el = document.querySelector(`input[name="${name}"]:checked`); return el ? el.value : ''; }
-
 function collectTableData(tbodyId) {
   const rows = [];
   document.querySelectorAll(`#${tbodyId} tr`).forEach(tr => {
-    const cells = [];
-    tr.querySelectorAll('input,select,textarea').forEach(el => cells.push(el.value.trim()));
+    const cells = []; tr.querySelectorAll('input,select,textarea').forEach(el => cells.push(el.value.trim()));
     if (cells.some(c => c)) rows.push(cells);
   });
   return rows;
 }
+const fmtDate = iso => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return m ? `${m[3]}/${m[2]}/${m[1]}` : (iso || ''); };
 
 function collectAll() {
   const fn = getV('firstName'), mn = getV('middleName'), ln = getV('lastName');
   return {
     personal: {
-      firstName: fn, middleName: mn, lastName: ln,
-      fullName: [fn, mn, ln].filter(Boolean).join(' '),
-      fatherName: getV('fatherName'), position: getV('position'),
-      source: getV('source'), sourceDetails: getV('sourceDetails'),
-      gender: getV('gender'), dob: getV('dob'), age: getV('age'),
-      placeOfBirth: getV('placeOfBirth'), citizenship: getV('citizenship'),
-      religion: getV('religion'), marital: getV('marital'), blood: getV('blood'),
+      firstName: fn, middleName: mn, lastName: ln, fullName: [fn, mn, ln].filter(Boolean).join(' '),
+      fatherName: getV('fatherName'), position: getV('position'), source: getV('source'), sourceDetails: getV('sourceDetails'),
+      gender: getV('gender'), dob: getV('dob'), age: getV('age'), placeOfBirth: getV('placeOfBirth'),
+      citizenship: getV('citizenship'), religion: getV('religion'), marital: getV('marital'), blood: getV('blood'),
       cnic: getV('cnic'), presentAddr: getV('presentAddr'), email: getV('email'),
       permAddr: getV('permAddr') || getV('presentAddr'),
       mobile: getV('mobile'), resTel: getV('resTel'), permTel: getV('permTel'),
       em1Name: getV('em1Name'), em1Rel: getV('em1Rel'), em1Tel: getV('em1Tel'),
-      em2Name: getV('em2Name'), em2Rel: getV('em2Rel'), em2Tel: getV('em2Tel'),
-      photo: photoB64
+      em2Name: getV('em2Name'), em2Rel: getV('em2Rel'), em2Tel: getV('em2Tel')
     },
-    education: collectTableData('eduBody'),
-    family: collectTableData('famBody'),
-    experience: {
-      worked: getRadio('worked'),
-      rows: collectTableData('expBody'),
-      orgStr: getV('orgStr'), jobResp: getV('jobResp')
-    },
-    compensation: {
-      salary: getV('expSalary'), benefits: getV('otherBenefits'), availability: getV('availability')
-    },
+    education: collectTableData('eduBody').filter(r => r.slice(1, 5).some(Boolean)),
+    family: collectTableData('famBody').filter(r => r[1] || r[3] || r[4] || r[5]),
+    experience: { worked: getRadio('worked'), rows: collectTableData('expBody'), orgStr: getV('orgStr'), jobResp: getV('jobResp') },
+    compensation: { salary: getV('expSalary'), benefits: getV('otherBenefits'), availability: getV('availability') },
     section3: {
       disease: getRadio('disease'), diseaseDetails: getV('diseaseBox'),
-      applied: getRadio('applied'), appliedDetails: getV('appliedBox'),
-      hasRel: getRadio('hasRel'),
-      references: collectTableData('refBody'),
-      relatives: collectTableData('relBody'),
-      sig: (sigPad && !sigPad.isEmpty()) ? sigPad.toDataURL('image/png') : null,
-      date: getV('sigDate') || new Date().toISOString().slice(0, 10)
+      applied: getRadio('applied'), appliedDetails: getV('appliedBox'), hasRel: getRadio('hasRel'),
+      references: collectTableData('refBody'), relatives: collectTableData('relBody'),
+      date: getV('sigDate')
     }
   };
 }
 
-// ── REVIEW POPULATE ───────────────────────────────────────────────────
-function populateReview() {
-  const d = collectAll();
-  const p = d.personal;
-  document.getElementById('rv-name').textContent   = p.fullName || '—';
-  document.getElementById('rv-pos').textContent    = p.position || '—';
-  document.getElementById('rv-cnic').textContent   = p.cnic || '—';
-  document.getElementById('rv-gender').textContent = `${p.gender === 'M' ? 'Male' : 'Female'}, ${p.age || '—'} yrs`;
-  document.getElementById('rv-marital').textContent= p.marital || '—';
-  document.getElementById('rv-email').textContent  = p.email || '—';
-  document.getElementById('rv-mobile').textContent = p.mobile || '—';
-  document.getElementById('rv-em').textContent     = `${p.em1Name} (${p.em1Tel})`;
-  document.getElementById('rv-salary').textContent = d.compensation.salary || 'Negotiable';
-  document.getElementById('rv-avail').textContent  = d.compensation.availability || '—';
+// ── FULL TEXT VERSION OF THE APPLICATION (goes in the HR email body) ─
+function buildDetailsText(d) {
+  const p = d.personal, e = d.experience, s = d.section3, c = d.compensation;
+  const L = (k, v) => `${k}: ${v || '-'}`;
+  const tbl = (rows, labels) => rows.length
+    ? rows.map((r, i) => `  ${i + 1}. ` + labels.map((l, j) => `${l}: ${r[j] || '-'}`).join(' | ')).join('\n') : '  -';
+  return [
+    '=== PERSONAL INFORMATION ===',
+    L('Name', p.fullName), L("Father's Name", p.fatherName), L('Position Applied For', p.position),
+    L('Came through', p.source + (p.sourceDetails ? ` (${p.sourceDetails})` : '')),
+    L('Gender', p.gender === 'M' ? 'Male' : 'Female'), L('Date of Birth', fmtDate(p.dob)), L('Age', p.age),
+    L('Place of Birth', p.placeOfBirth), L('Citizenship', p.citizenship), L('Religion', p.religion),
+    L('Marital Status', p.marital), L('Blood Group', p.blood), L('CNIC', p.cnic),
+    '', '=== CONTACT ===',
+    L('Present Address', p.presentAddr), L('Permanent Address', p.permAddr), L('Email', p.email),
+    L('Mobile', p.mobile), L('Residence Tel', p.resTel), L('Permanent Tel', p.permTel),
+    L('Emergency Contact 1', `${p.em1Name} (${p.em1Rel}) ${p.em1Tel}`),
+    L('Emergency Contact 2', p.em2Name ? `${p.em2Name} (${p.em2Rel}) ${p.em2Tel}` : ''),
+    '', '=== EDUCATION ===', tbl(d.education, ['Degree', 'Year', 'Institute', 'Grade', 'Subject']),
+    '', '=== FAMILY ===', tbl(d.family, ['Relation', 'Name', 'Dependent', 'Profession', 'Office', 'Contact']),
+    '', '=== WORK EXPERIENCE ===', L('Worked earlier', e.worked),
+    e.worked === 'No' ? '  -' : tbl(e.rows, ['Employer', 'Salary Start', 'Salary Last', 'Desig. Start', 'Desig. Last', 'From', 'To', 'Functions', 'Reason for leaving']),
+    L('Organization Structure', e.orgStr), L('Present Job Responsibility', e.jobResp),
+    '', '=== COMPENSATION ===', L('Expected Salary', c.salary), L('Other Benefits', c.benefits), L('Availability', c.availability),
+    '', '=== HEALTH / HISTORY ===',
+    L('Disease / hospitalized (last year)', s.disease === 'Yes' ? 'Yes - ' + s.diseaseDetails : 'No'),
+    L('Applied to our units before', s.applied === 'Yes' ? 'Yes - ' + s.appliedDetails : 'No'),
+    '', '=== REFERENCES ===', tbl(s.references, ['Name', 'Relationship', 'Contact', 'Title / Company']),
+    '', '=== RELATIVES IN KASSIM / RAINBOW UNITS ===', L('Has relatives', s.hasRel),
+    s.hasRel === 'Yes' ? tbl(s.relatives, ['Name', 'Designation', 'Dept', 'Relationship']) : '  -',
+    '', L('Declaration signed on', fmtDate(s.date))
+  ].join('\n');
 }
 
-// ── PDF GENERATION ────────────────────────────────────────────────────
-const fmtDate = iso => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return m ? `${m[3]}/${m[2]}/${m[1]}` : (iso || ''); };
-
-// maps collectAll() output to what buildPdf() expects
-function toPdfData(d) {
-  const p = d.personal, e = d.experience, s3 = d.section3;
-  const c = document.getElementById('sigCanvas');
-  return {
+// ── PDF (attached to the HR email) ────────────────────────────────────────────────────────────
+function makePdfDataUri(d) {
+  const p = d.personal, e = d.experience, s3 = d.section3, c = $('sigCanvas');
+  const data = {
     photo: photoB64 && photoDim ? { dataUrl: photoB64, w: photoDim.w, h: photoDim.h } : null,
-    firstName: p.firstName, middleName: p.middleName, lastName: p.lastName,
-    fatherName: p.fatherName, position: p.position, source: p.source, sourceDetails: p.sourceDetails,
-    gender: p.gender, dob: fmtDate(p.dob), age: p.age, placeOfBirth: p.placeOfBirth,
-    citizenship: p.citizenship, religion: p.religion, married: p.marital === 'Married', blood: p.blood,
-    cnic: p.cnic, presentAddr: p.presentAddr,
+    firstName: p.firstName, middleName: p.middleName, lastName: p.lastName, fatherName: p.fatherName,
+    position: p.position, source: p.source, sourceDetails: p.sourceDetails, gender: p.gender,
+    dob: fmtDate(p.dob), age: p.age, placeOfBirth: p.placeOfBirth, citizenship: p.citizenship, religion: p.religion,
+    married: p.marital === 'Married', blood: p.blood, cnic: p.cnic, presentAddr: p.presentAddr,
     permAddr: p.permAddr === p.presentAddr ? 'Same as present address' : p.permAddr,
     email: p.email, mobile: p.mobile, resTel: p.resTel, permTel: p.permTel,
-    em1Name: p.em1Name, em1Rel: p.em1Rel, em1Tel: p.em1Tel,
-    em2Name: p.em2Name, em2Rel: p.em2Rel, em2Tel: p.em2Tel,
-    edu: d.education.filter(r => r.slice(1, 5).some(Boolean)),          // skip untouched preset rows
-    family: d.family.filter(r => r[1] || r[3] || r[4] || r[5]),
-    worked: e.worked !== 'No', exp: e.rows, orgStr: e.orgStr, jobResp: e.jobResp,
+    em1Name: p.em1Name, em1Rel: p.em1Rel, em1Tel: p.em1Tel, em2Name: p.em2Name, em2Rel: p.em2Rel, em2Tel: p.em2Tel,
+    edu: d.education, family: d.family, worked: e.worked !== 'No', exp: e.rows, orgStr: e.orgStr, jobResp: e.jobResp,
     expSalary: d.compensation.salary, otherBenefits: d.compensation.benefits, availability: d.compensation.availability,
     disease: s3.disease, diseaseDetails: s3.diseaseDetails, applied: s3.applied, appliedDetails: s3.appliedDetails,
     refs: s3.references, hasRel: s3.hasRel === 'Yes', rels: s3.relatives,
-    signature: s3.sig ? { dataUrl: s3.sig, w: c.width, h: c.height } : null,
+    signature: !sigPad.isEmpty() ? { dataUrl: sigPad.toDataURL('image/png'), w: c.width, h: c.height } : null,
     sigDate: fmtDate(s3.date)
   };
+  return buildPdf(data, window.jspdf.jsPDF).output('datauristring');
 }
 
-function generatePdf() {
-  const d = collectAll();
-  currentPdfDoc = buildPdf(toPdfData(d), window.jspdf.jsPDF);
-  renderPreview();
-  return currentPdfDoc;
-}
-
-function renderPreview() {
-  if (!currentPdfDoc) return;
-  if (previewUrl) URL.revokeObjectURL(previewUrl);
-  previewUrl = URL.createObjectURL(currentPdfDoc.output('blob'));
-  document.getElementById('pdfFrame').src = previewUrl;
-}
-function refreshPreview() { generatePdf(); }
-
-function pdfFileName(d) {
-  const name = (d.personal.fullName || 'Applicant').replace(/[^a-zA-Z0-9_-]/g, ' ').trim().replace(/\s+/g, '_');
-  return `Kassim_Job_Application_${name}.pdf`;
-}
-function downloadPdf() {
-  const doc = generatePdf();
-  doc.save(pdfFileName(collectAll()));
-}
-
-// ── SUBMIT ────────────────────────────────────────────────────────────
+// ── SUBMIT ───────────────────────────────────────────────────────────
 async function submitForm() {
-  const btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
-  document.getElementById('spinnerOverlay').style.display = 'flex';
+  if (submitting) return;
+  if (!validateStep(1) || !validateStep(3) || !validateStep(4)) return;
+
+  submitting = true;
+  const btn = $('submitBtn');
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+  $('spinnerOverlay').style.display = 'flex';
 
   try {
-    const d = collectAll();
-    const doc = generatePdf();
+    const d = collectAll(), p = d.personal;
+    const resp = await fetch(SUBMIT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        hp: getV('website'),                                   // honeypot (must stay empty)
+        fields: { name: p.fullName, position: p.position, cnic: p.cnic, email: p.email, mobile: p.mobile },
+        details: buildDetailsText(d),
+        pdfBase64: makePdfDataUri(d)
+      })
+    });
+    const out = await resp.json().catch(() => ({}));
+    if (!resp.ok || !out.ok) throw new Error(out.error || ('HTTP ' + resp.status));
 
-    // Auto-download PDF for applicant
-    doc.save(pdfFileName(d));
-
-    // Build mailto fallback link
-    const subj = encodeURIComponent(`Job Application: ${d.personal.fullName} — ${d.personal.position} (CNIC: ${d.personal.cnic})`);
-    const body = encodeURIComponent(
-      `Dear HR Team,\n\nPlease find my job application details below:\n\n` +
-      `Name: ${d.personal.fullName}\nFather: ${d.personal.fatherName}\nPosition: ${d.personal.position}\n` +
-      `CNIC: ${d.personal.cnic}\nMobile: ${d.personal.mobile}\nEmail: ${d.personal.email}\n` +
-      `Expected Salary: ${d.compensation.salary}\nAvailability: ${d.compensation.availability}\n\n` +
-      `I have attached the completed 4-page application PDF (${pdfFileName(d)}) to this email.\n\nRegards,\n${d.personal.fullName}`
-    );
-    document.getElementById('mailtoFallback').href = `mailto:${HR_EMAIL}?subject=${subj}&body=${body}`;
-
-    // Try EmailJS if configured (sends the details; PDF is too large for EmailJS variables)
-    if (EMAILJS_PUBLIC_KEY !== 'YOUR_EMAILJS_PUBLIC_KEY') {
-      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-        applicant_name: d.personal.fullName,
-        father_name: d.personal.fatherName,
-        position: d.personal.position,
-        cnic: d.personal.cnic,
-        email: d.personal.email,
-        mobile: d.personal.mobile,
-        present_address: d.personal.presentAddr,
-        expected_salary: d.compensation.salary,
-        availability: d.compensation.availability,
-        other_benefits: d.compensation.benefits,
-        source: d.personal.source,
-        gender: d.personal.gender === 'M' ? 'Male' : 'Female',
-        dob: d.personal.dob,
-        age: d.personal.age,
-        blood_group: d.personal.blood,
-        marital: d.personal.marital,
-        experience_status: d.experience.worked,
-        em1_name: d.personal.em1Name,
-        em1_rel: d.personal.em1Rel,
-        em1_tel: d.personal.em1Tel,
-        to_email: HR_EMAIL,
-        reply_to: d.personal.email,
-        submission_date: new Date().toLocaleString(),
-      });
-    }
-
-    document.getElementById('spinnerOverlay').style.display = 'none';
-    document.getElementById('successOverlay').style.display = 'flex';
-
+    $('spinnerOverlay').style.display = 'none';
+    $('successOverlay').style.display = 'flex';        // thank-you screen (cannot be dismissed)
   } catch (err) {
     console.error('Submit error:', err);
-    document.getElementById('spinnerOverlay').style.display = 'none';
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Submit Application Now';
-
-    if (confirm('Email auto-send encountered an issue. Your PDF has been downloaded. Would you like to open your email client to send it manually to ' + HR_EMAIL + '?')) {
-      window.location.href = document.getElementById('mailtoFallback').href;
-    }
-    document.getElementById('successOverlay').style.display = 'flex';
+    $('spinnerOverlay').style.display = 'none';
+    submitting = false; btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Application';
+    alert('Sorry, we could not submit your application right now. Please check your internet connection and try again.');
   }
-}
-
-function resetForm() {
-  document.getElementById('successOverlay').style.display = 'none';
-  document.getElementById('submitBtn').disabled = false;
-  document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-circle-check"></i> Submit Application Now';
-  location.reload();   // clean slate for the next applicant
 }
