@@ -289,7 +289,7 @@ function buildPdf(d, JsPDF) {
   }
   listTable(170, ['S. No', 'Name', 'Relationship', 'Contact Number', 'Title / Company'], d.refs || [], 2);
 
-  flow(58, 272, [{ t: 'Do you have any relatives working with any Rainbow units?' }, { opts: ['Yes', 'No'], sel: d.hasRel ? 'Yes' : 'No', bold: true }, { t: '(If Yes Please provide', gap: 0 }], { size: 8.5 });
+  flow(58, 272, [{ t: 'Do you have any relatives working with any kassim units?' }, { opts: ['Yes', 'No'], sel: d.hasRel ? 'Yes' : 'No', bold: true }, { t: '(If Yes Please provide', gap: 0 }], { size: 8.5 });
   flow(58, 286, [{ t: 'detail)' }, { blank: 100, v: d.hasRel ? 'See below' : '', gap: 4 }, { t: '(Mandatory field)', gap: 0 }], { size: 8.5 });
   listTable(307, ['S. No', 'Name', 'Designation', 'Dept', 'Relationship'], d.hasRel ? (d.rels || []) : [], 2);
 
@@ -521,7 +521,7 @@ function buildDetailsText(d) {
     L('Disease / hospitalized (last year)', s.disease === 'Yes' ? 'Yes - ' + s.diseaseDetails : 'No'),
     L('Applied to our units before', s.applied === 'Yes' ? 'Yes - ' + s.appliedDetails : 'No'),
     '', '=== REFERENCES ===', tbl(s.references, ['Name', 'Relationship', 'Contact', 'Title / Company']),
-    '', '=== RELATIVES IN KASSIM / RAINBOW UNITS ===', L('Has relatives', s.hasRel),
+    '', '=== RELATIVES IN KASSIM / kassim UNITS ===', L('Has relatives', s.hasRel),
     s.hasRel === 'Yes' ? tbl(s.relatives, ['Name', 'Designation', 'Dept', 'Relationship']) : '  -',
     '', L('Declaration signed on', fmtDate(s.date))
   ].join('\n');
